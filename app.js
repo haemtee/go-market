@@ -21,10 +21,7 @@ const options = {
 
 //connect mongoose atlas, colection name = go-market
 mongoose
-  .connect(
-    "mongodb+srv://allmine:fhWBqQkw1kLdAt8q@cluster0.4it61.mongodb.net/go-market?retryWrites=true&w=majority",
-    options
-  )
+  .connect(process.env.MONGODBURI, options)
   .then(
     app.listen(process.env.PORT, () => {
       console.log(
