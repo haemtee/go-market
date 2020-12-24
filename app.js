@@ -1,16 +1,31 @@
 const express = require("express");
 const helmet = require("helmet");
 const mongoose = require("mongoose");
+const cookieParser = require("cookie-parser");
+
 require("dotenv/config");
 
 const app = express();
+const userRoutes = require("./routes/user");
+const productRoutes = require("./routes/product");
 
 //middleware
 app.use(helmet());
 app.use(express.json());
+app.use(cookieParser());
 
-app.get("/", (req, res) => {
-  res.status(200).send("Hello");
+// {base.api}/v1/user
+app.use("/v1/user", userRoutes);
+// {base.api}/v1/product
+app.use("/v1/product", productRoutes);
+
+// !handling error
+app.use((err, req, res, next) => {
+  const status = err.errorStatus || 500;
+  const message = err.message;
+  const data = err.data;
+
+  res.status(status).json({ message: message, data: data });
 });
 
 const options = {
