@@ -50,8 +50,7 @@ exports.addProduct = (req, res, next) => {
 
 exports.getAllProduct = (req, res, next) => {
   Product.find()
-    .select("-promoted")
-    .sort("-createdAt")
+    .sort({ promoted: -1, createdAt: -1 })
     .then((result) => {
       res.status(201).json({
         message: "Get all product success",
@@ -122,7 +121,6 @@ exports.getProductByName = (req, res, next) => {
     });
 };
 
-// TODO SELESAIKAN INI
 exports.deleteProductById = (req, res, next) => {
   // simpan fungsi hapus product
   const isAdmin = req.userFromToken.roles === "admin";
@@ -139,7 +137,7 @@ exports.deleteProductById = (req, res, next) => {
       });
     }
     // jika produk ada maka coba cek
-    if (result !== null) {
+    else if (result !== null) {
       // (compare object butuh di stringify)
       const sellerId = JSON.stringify(result.seller_id);
       const tokenId = JSON.stringify(idToken);
@@ -150,7 +148,7 @@ exports.deleteProductById = (req, res, next) => {
           Product.findOneAndDelete({ _id: idProduct })
             .then((result) => {
               res.status(201).json({
-                message: "Delete product by admin success",
+                message: "Sukses menghapus product oleh admin",
                 data: result,
               });
             })
@@ -166,12 +164,12 @@ exports.deleteProductById = (req, res, next) => {
         }
       }
       // jika seller id sesuai dengan cookie id
-      if (sellerId === tokenId) {
+      else if (sellerId === tokenId) {
         // hapus produck nya
         Product.findOneAndDelete({ _id: idProduct })
           .then((result) => {
             res.status(201).json({
-              message: "Delete product success",
+              message: "Sukses menghapus produk sendiri",
               data: result,
             });
           })
@@ -197,6 +195,78 @@ exports.editProductbyId = (req, res, next) => {
 
   const idToken = req.userFromToken._id;
   const isAdmin = req.userFromToken.roles === "admin";
-  const idParams = req.params.id;
+  const idProduct = req.params.id;
   //edit product here
+  Product.findOne({ _id: idProduct }).then((result) => {
+    // jika tidak ada maka
+    if (result === null) {
+      console.log("result length = null");
+      res.status(403).json({
+        message: "Error produk tidak ditemukan",
+      });
+    }
+    // jika produk ada maka coba cek
+    else if (result !== null) {
+      // (compare object butuh di stringify)
+      const sellerId = JSON.stringify(result.seller_id);
+      const tokenId = JSON.stringify(idToken);
+      // check apakah seller id sesuai dengan cookie? , jika tidak sesuai
+      if (sellerId != tokenId) {
+        // jika seller id tidak sesuai, apakah roles nya admin? jika ya edit product by admin
+        if (isAdmin) {
+          let edit = {};
+          for (const obj in req.body) {
+            if (obj) {
+              edit[obj] = req.body[obj];
+            }
+          }
+          console.log(edit);
+          // tidak bisa ganti seller id
+          if (edit.seller_id) delete edit.seller_id;
+          // if (edit.promoted) delete edit.promoted;
+          Product.updateOne({ _id: idProduct }, { $set: edit })
+            .then((result) => {
+              res.status(201).json({
+                message: "Edit data by admin success",
+                data: result,
+              });
+            })
+            .catch((err) => {
+              console.log("error :", err);
+              next();
+            });
+          // jika seller id tidak sesuai dan bukan admin, tampilkan error
+        } else {
+          res.status(401).json({
+            message: "Hanya bisa mengedit product sendiri",
+          });
+        }
+      }
+      // jika seller id sesuai dengan cookie id
+      else if (sellerId === tokenId) {
+        // edit product nya
+        let edit = {};
+        for (const obj in req.body) {
+          if (obj) {
+            edit[obj] = req.body[obj];
+          }
+        }
+        // tidak bisa ganti seller id
+        if (edit.seller_id) delete edit.seller_id;
+        // tidak bisa ganti promoted
+        if (edit.promoted) delete edit.promoted;
+        Product.updateOne({ _id: idProduct }, { $set: edit })
+          .then((result) => {
+            res.status(201).json({
+              message: "Edit data success",
+              data: result,
+            });
+          })
+          .catch((err) => {
+            console.log("error :", err);
+            next();
+          });
+      }
+    }
+  });
 };

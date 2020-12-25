@@ -2,6 +2,7 @@ const { validationResult } = require("express-validator");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
+const Product = require("../models/product");
 
 const maxAge = 3 * 24 * 60 * 60; // 3 hari
 const createToken = (id) => {
@@ -245,43 +246,75 @@ exports.editUser = (req, res, next) => {
 };
 
 exports.deleteUser = (req, res, next) => {
-  const id = req.userFromToken._id;
+  const idToken = req.userFromToken._id;
   const isAdmin = req.userFromToken.roles === "admin";
-  const idParams = req.params.id;
-  // check apakah id param dan id json sesuai
-  if (idParams != id) {
-    // kalau admin bisa hapus
-    if (isAdmin) {
-      User.findOneAndDelete({ _id: idParams })
-        .then((result) => {
-          res.status(201).json({
-            message: "Delete user success",
-            data: result,
-          });
-        })
-        .catch((err) => {
-          console.log("error :", err);
-          next();
-        });
-    } else {
-      const error = new Error("Tidak punya akses untuk menghapus user");
-      error.errorStatus = 401;
-      throw error;
-    }
-  }
-  // jika id cookie = id params ( hapus user sendiri )
-  else if (idParams === id) {
-    User.findOneAndDelete({ _id: idParams })
-      .then((result) => {
-        res.cookie("gomart", "", { maxAge: 1 });
-        res.status(201).json({
-          message: "Delete user success",
-          data: result,
-        });
-      })
-      .catch((err) => {
-        console.log("error :", err);
-        next();
+
+  const idUser = req.params.id;
+
+  // cek apakah user yang akan di hapus ada?
+  User.findOne({ _id: idUser }).then((result) => {
+    // jika tidak ada maka
+    if (result === null) {
+      //console.log("result length = null");
+      res.status(403).json({
+        message: "Error User tidak ditemukan",
       });
-  }
+      // jika user ditemukan maka
+    } else if (result != null) {
+      const isSeller = result.roles === "seller";
+      // check apakah id param dan id json sesuai
+      const tokenId = JSON.stringify(idToken);
+      const userId = JSON.stringify(idUser);
+
+      if (userId != tokenId) {
+        // kalau admin bisa hapus
+        if (isAdmin) {
+          User.findOneAndDelete({ _id: idUser })
+            .then((result) => {
+              res.status(201).json({
+                message: "Sukses menghapus user oleh admin",
+                data: result,
+              });
+              // clean up product yang dia jual jika dia buyer
+              if (isSeller) {
+                Product.deleteMany({ seller_id: idUser })
+                  .then((result) => console.log(result))
+                  .catch((err) => console.log(err));
+              }
+            })
+            .catch((err) => {
+              console.log("error :", err);
+              next();
+            });
+        } else {
+          const error = new Error("Tidak punya akses untuk menghapus user");
+          error.errorStatus = 401;
+          throw error;
+        }
+      }
+      // jika id cookie = id params ( hapus user sendiri )
+      else if (userId == tokenId) {
+        User.findOneAndDelete({ _id: idUser })
+          .then((result) => {
+            res.cookie("gomart", "", { maxAge: 1 });
+            res.status(201).json({
+              message: "Sukses menghapus user sendiri",
+              data: result,
+            });
+            // clean up product yang dia jual jika dia buyer
+            if (isSeller) {
+              Product.deleteMany({ seller_id: idUser })
+                .then((result) => console.log(result))
+                .catch((err) => console.log(err));
+            }
+          })
+          .catch((err) => {
+            console.log("error :", err);
+            next();
+          });
+      }
+    }
+  });
 };
+
+//User.update({"seller_id": false}, {"$set":{"created": true}}, {"multi": true}, (err, writeResult) => {});

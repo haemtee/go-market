@@ -12,10 +12,10 @@ const productValidate = [
     .isLength({ min: 10 })
     .withMessage("Deskripsi minimal 10 karakter"),
   body("price")
-    .isNumeric({ min: 0 })
+    .isFloat({ min: 0 })
     .withMessage("Harga harus berupa angka dan tidak boleh minus"),
   body("stock")
-    .isNumeric({ min: 0 })
+    .isFloat({ min: 0 })
     .withMessage("Stock harus berupa angka dan tidak boleh minus"),
 ];
 
@@ -31,11 +31,11 @@ const editValidate = [
     .withMessage("Deskripsi minimal 10 karakter"),
   body("price")
     .optional()
-    .isNumeric({ min: 0 })
+    .isFloat({ min: 0 })
     .withMessage("Harga harus berupa angka dan tidak boleh minus"),
   body("stock")
     .optional()
-    .isNumeric({ min: 0 })
+    .isFloat({ min: 0 })
     .withMessage("Stock harus berupa angka dan tidak boleh minus"),
   body("available")
     .optional()
