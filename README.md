@@ -16,6 +16,8 @@ PATCH
 {base.api}/v1/user/:id       => edit user by id  // only edit own id base on cookie, cant edit roles or username, admin roles can edit, include roles 
 
 DELETE
-{base.api}/v1/user/:id       => delete user by id  // only delete own id base on cookie, or admin roles ```
+{base.api}/v1/user/:id       => delete user by id  // only delete own id base on cookie, or admin roles 
+
+```
 
 to be continue
