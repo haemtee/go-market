@@ -9,8 +9,8 @@ GET
 {base.api}/v1/user/logout    => remove cookie return null
 
 POST
-{base.api}/v1/user/register  => on success return  cookie token jwt berupa id
-{base.api}/v1/user/login     => on success return  cookie token jwt berupa id
+{base.api}/v1/user/register  => on success return cookie token jwt id
+{base.api}/v1/user/login     => on success return cookie token jwt id
 
 PATCH
 {base.api}/v1/user/:id       => edit user by id  // only edit own id base on cookie, cant edit roles or username, admin roles can edit, include roles 
