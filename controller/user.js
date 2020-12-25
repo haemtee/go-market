@@ -10,7 +10,7 @@ const createToken = (id) => {
 
 exports.register = (req, res, next) => {
   const errors = validationResult(req);
-  console.log("error dari validation result =", errors);
+  //console.log("error dari validation result =", errors);
   if (!errors.isEmpty()) {
     const err = new Error("Data Invalid");
     err.errorStatus = 400;
@@ -185,11 +185,11 @@ exports.editUser = (req, res, next) => {
     throw err;
   }
 
-  const id = req.userFromToken._id;
+  const idToken = req.userFromToken._id;
   const isAdmin = req.userFromToken.roles === "admin";
   const idParams = req.params.id;
   // check apakah id param dan id json sesuai
-  if (idParams != id) {
+  if (idParams != idToken) {
     if (isAdmin) {
       let edit = {};
 
@@ -218,7 +218,7 @@ exports.editUser = (req, res, next) => {
       error.errorStatus = 401;
       throw error;
     }
-  } else if (idParams === id) {
+  } else if (idParams === idToken) {
     let edit = {};
 
     for (const obj in req.body) {
@@ -230,7 +230,7 @@ exports.editUser = (req, res, next) => {
     if (edit.username) delete edit.username;
     if (edit.roles) delete edit.roles;
 
-    User.updateOne({ _id: id }, { $set: edit })
+    User.updateOne({ _id: idParams }, { $set: edit })
       .then((result) => {
         res.status(201).json({
           message: "Edit data success",

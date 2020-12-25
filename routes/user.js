@@ -17,6 +17,7 @@ const userValidate = [
     .withMessage("Role tidak sesuai"),
   body("name").isLength({ min: 4 }).withMessage("Nama minimal 4 karakter"),
   body("phone")
+    .isLength({ min: 5 })
     .matches(/^\d+$/)
     .withMessage("Input yang diterima hanya berupa angka"),
   body("address").isLength({ min: 8 }).withMessage("Isi alamat kurang lengkap"),

@@ -126,8 +126,8 @@ exports.getProductByName = (req, res, next) => {
 exports.deleteProductById = (req, res, next) => {
   // simpan fungsi hapus product
   const isAdmin = req.userFromToken.roles === "admin";
-  console.log("is admin =", isAdmin);
-  const id = req.userFromToken._id;
+  //console.log("is admin =", isAdmin);
+  const idToken = req.userFromToken._id;
   const idProduct = req.params.id;
   // cari dlu apakah produk ada?
   Product.findOne({ _id: idProduct }).then((result) => {
@@ -142,7 +142,7 @@ exports.deleteProductById = (req, res, next) => {
     if (result !== null) {
       // (compare object butuh di stringify)
       const sellerId = JSON.stringify(result.seller_id);
-      const tokenId = JSON.stringify(id);
+      const tokenId = JSON.stringify(idToken);
       // check apakah seller id sesuai dengan cookie? , jika tidak sesuai
       if (sellerId != tokenId) {
         // jika seller id tidak sesuai, apakah roles nya admin? jika ya hapus product by admin
@@ -182,4 +182,21 @@ exports.deleteProductById = (req, res, next) => {
       }
     }
   });
+};
+
+exports.editProductbyId = (req, res, next) => {
+  // validasi body
+  const errors = validationResult(req);
+  //console.log(errors);
+  if (!errors.isEmpty()) {
+    const err = new Error("Data Invalid");
+    err.errorStatus = 400;
+    err.data = errors.array();
+    throw err;
+  }
+
+  const idToken = req.userFromToken._id;
+  const isAdmin = req.userFromToken.roles === "admin";
+  const idParams = req.params.id;
+  //edit product here
 };

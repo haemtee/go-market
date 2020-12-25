@@ -19,6 +19,34 @@ const productValidate = [
     .withMessage("Stock harus berupa angka dan tidak boleh minus"),
 ];
 
+const editValidate = [
+  body("name")
+    .isLength({ min: 5 })
+    .optional()
+    .withMessage("Product minimal 5 karakter"),
+  body("image").optional().isString().withMessage("Hanya menerima string"),
+  body("description")
+    .optional()
+    .isLength({ min: 10 })
+    .withMessage("Deskripsi minimal 10 karakter"),
+  body("price")
+    .optional()
+    .isNumeric({ min: 0 })
+    .withMessage("Harga harus berupa angka dan tidak boleh minus"),
+  body("stock")
+    .optional()
+    .isNumeric({ min: 0 })
+    .withMessage("Stock harus berupa angka dan tidak boleh minus"),
+  body("available")
+    .optional()
+    .isBoolean()
+    .withMessage("Available hanya menerima boolean"),
+  body("promoted")
+    .optional()
+    .isBoolean()
+    .withMessage("Promoted hanya menerima boolean"),
+];
+
 // ? PRODUCT ROUTER
 // !POST {base.api}/v1/product/add  ADD NEW PRODUCT
 router.post("/add", productValidate, requireAuth, productController.addProduct);
@@ -40,5 +68,13 @@ router.get("/name/:name", productController.getProductByName);
 
 // !DELETE {base.api}/v1/product/:id   DELETE PRODUCT BY PRODUCT ID
 router.delete("/:id", requireAuth, productController.deleteProductById);
+
+// !EDIT {base.api}/v1/product/:id   EDIT PRODUCT BY PRODUCT ID
+router.patch(
+  "/:id",
+  editValidate,
+  requireAuth,
+  productController.editProductbyId
+);
 
 module.exports = router;
