@@ -32,4 +32,26 @@ const requireAuth = (req, res, next) => {
   }
 };
 
-module.exports = { requireAuth };
+const isIdExist = (req, res, next) => {
+  const idUser = req.params.id;
+
+  User.findOne({ _id: idUser })
+    .then((result) => {
+      // jika tidak ada maka
+      if (result === null) {
+        //console.log("result length = null");
+        res.status(403).json({
+          message: "Error User tidak ditemukan",
+        });
+        // jika user ditemukan maka
+      } else if (result != null) {
+        console.log("is id exist :", result);
+        next();
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      throw err;
+    });
+};
+module.exports = { requireAuth, isIdExist };

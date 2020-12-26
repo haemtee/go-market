@@ -1,6 +1,6 @@
 const express = require("express");
 const { body } = require("express-validator");
-const { requireAuth } = require("../controller/userMiddleware");
+const { requireAuth, isIdExist } = require("../controller/userMiddleware");
 const router = express.Router();
 
 const userController = require("../controller/user");
@@ -84,14 +84,20 @@ router.get("/users", requireAuth, userController.getAllUser);
 
 // !GET {base.api}/v1/user/:id  GET USER by id
 // * COOKIE VALIDATED CAN ACCESS THIS
-router.get("/:id", requireAuth, userController.getUser);
+router.get("/:id", requireAuth, isIdExist, userController.getUser);
 
 // !PATCH {base.api}/v1/user/:id  EDIT USER by id cant edit roles or username
 // * COOKIE VALIDATED & ONLY EDIT OWN ID ACCESS
-router.patch("/:id", editUserValidate, requireAuth, userController.editUser);
+router.patch(
+  "/:id",
+  editUserValidate,
+  requireAuth,
+  isIdExist,
+  userController.editUser
+);
 
 // !DELETE {base.api}/v1/user/:id  DELET USER by id
 // * COOKIE VALIDATED & ONLY DELETE OWN ID ACCESS
-router.delete("/:id", requireAuth, userController.deleteUser);
+router.delete("/:id", requireAuth, isIdExist, userController.deleteUser);
 
 module.exports = router;

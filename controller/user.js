@@ -251,70 +251,58 @@ exports.deleteUser = (req, res, next) => {
 
   const idUser = req.params.id;
 
-  // cek apakah user yang akan di hapus ada?
-  User.findOne({ _id: idUser }).then((result) => {
-    // jika tidak ada maka
-    if (result === null) {
-      //console.log("result length = null");
-      res.status(403).json({
-        message: "Error User tidak ditemukan",
-      });
-      // jika user ditemukan maka
-    } else if (result != null) {
-      const isSeller = result.roles === "seller";
-      // check apakah id param dan id json sesuai
-      const tokenId = JSON.stringify(idToken);
-      const userId = JSON.stringify(idUser);
+  const isSeller = result.roles === "seller";
+  // check apakah id param dan id json sesuai
+  const tokenId = JSON.stringify(idToken);
+  const userId = JSON.stringify(idUser);
 
-      if (userId != tokenId) {
-        // kalau admin bisa hapus
-        if (isAdmin) {
-          User.findOneAndDelete({ _id: idUser })
-            .then((result) => {
-              res.status(201).json({
-                message: "Sukses menghapus user oleh admin",
-                data: result,
-              });
-              // clean up product yang dia jual jika dia buyer
-              if (isSeller) {
-                Product.deleteMany({ seller_id: idUser })
-                  .then((result) => console.log(result))
-                  .catch((err) => console.log(err));
-              }
-            })
-            .catch((err) => {
-              console.log("error :", err);
-              next();
-            });
-        } else {
-          const error = new Error("Tidak punya akses untuk menghapus user");
-          error.errorStatus = 401;
-          throw error;
-        }
-      }
-      // jika id cookie = id params ( hapus user sendiri )
-      else if (userId == tokenId) {
-        User.findOneAndDelete({ _id: idUser })
-          .then((result) => {
-            res.cookie("gomart", "", { maxAge: 1 });
-            res.status(201).json({
-              message: "Sukses menghapus user sendiri",
-              data: result,
-            });
-            // clean up product yang dia jual jika dia buyer
-            if (isSeller) {
-              Product.deleteMany({ seller_id: idUser })
-                .then((result) => console.log(result))
-                .catch((err) => console.log(err));
-            }
-          })
-          .catch((err) => {
-            console.log("error :", err);
-            next();
+  if (userId != tokenId) {
+    // kalau admin bisa hapus
+    if (isAdmin) {
+      User.findOneAndDelete({ _id: idUser })
+        .then((result) => {
+          res.status(201).json({
+            message: "Sukses menghapus user oleh admin",
+            data: result,
           });
-      }
+          // clean up product yang dia jual jika dia buyer
+          if (isSeller) {
+            Product.deleteMany({ seller_id: idUser })
+              .then((result) => console.log(result))
+              .catch((err) => console.log(err));
+          }
+        })
+        .catch((err) => {
+          console.log("error :", err);
+          next();
+        });
+    } else {
+      const error = new Error("Tidak punya akses untuk menghapus user");
+      error.errorStatus = 401;
+      throw error;
     }
-  });
+  }
+  // jika id cookie = id params ( hapus user sendiri )
+  else if (userId == tokenId) {
+    User.findOneAndDelete({ _id: idUser })
+      .then((result) => {
+        res.cookie("gomart", "", { maxAge: 1 });
+        res.status(201).json({
+          message: "Sukses menghapus user sendiri",
+          data: result,
+        });
+        // clean up product yang dia jual jika dia buyer
+        if (isSeller) {
+          Product.deleteMany({ seller_id: idUser })
+            .then((result) => console.log(result))
+            .catch((err) => console.log(err));
+        }
+      })
+      .catch((err) => {
+        console.log("error :", err);
+        next();
+      });
+  }
 };
 
 //User.update({"seller_id": false}, {"$set":{"created": true}}, {"multi": true}, (err, writeResult) => {});
