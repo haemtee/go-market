@@ -1,6 +1,7 @@
 const express = require("express");
 const { body } = require("express-validator");
-const { requireAuth } = require("../controller/userMiddleware");
+const { requireAuth, isIdExist } = require("../controller/userMiddleware");
+const { isProductExist } = require("../controller/productMiddleware");
 const router = express.Router();
 
 const productController = require("../controller/product");
@@ -57,23 +58,29 @@ router.get("/products", productController.getAllProduct);
 // !GET {base.api}/v1/product/promoted  GET ALL PROMOTED PRODUCT
 router.get("/promoted", productController.getPromotedProduct);
 
-// !GET {base.api}/v1/product/:id   GET ALL PRODUCT BY PRODUCT ID
-router.get("/:id", productController.getProductById);
+// !GET {base.api}/v1/product/:id   GET PRODUCT BY PRODUCT ID
+router.get("/:id", isProductExist, productController.getProductById);
 
 // !GET {base.api}/v1/product/:seller   GET ALL PRODUCT BY SELLER ID
-router.get("/seller/:seller", productController.getProductBySeller);
+router.get("/seller/:id", isIdExist, productController.getProductBySeller);
 
 // !GET {base.api}/v1/product/:name   GET ALL PRODUCT BY PRODUCT NAME
 router.get("/name/:name", productController.getProductByName);
 
 // !DELETE {base.api}/v1/product/:id   DELETE PRODUCT BY PRODUCT ID
-router.delete("/:id", requireAuth, productController.deleteProductById);
+router.delete(
+  "/:id",
+  requireAuth,
+  isProductExist,
+  productController.deleteProductById
+);
 
 // !EDIT {base.api}/v1/product/:id   EDIT PRODUCT BY PRODUCT ID
 router.patch(
   "/:id",
   editValidate,
   requireAuth,
+  isProductExist,
   productController.editProductbyId
 );
 

@@ -29,7 +29,7 @@ GET
 {base.api}/v1/product/products          => get all products  sort  by promoted product and newest product
 {base.api}/v1/product/promoted          => get promoted products
 {base.api}/v1/product/:id               => get product by id
-{base.api}/v1/product/seller/:seller    => get product by seller
+{base.api}/v1/product/seller/:id        => get product by seller
 {base.api}/v1/product/name/:name        => get product by name
 
 

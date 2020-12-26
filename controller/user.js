@@ -188,9 +188,13 @@ exports.editUser = (req, res, next) => {
 
   const idToken = req.userFromToken._id;
   const isAdmin = req.userFromToken.roles === "admin";
-  const idParams = req.params.id;
+  const idUser = req.params.id;
   // check apakah id param dan id json sesuai
-  if (idParams != idToken) {
+
+  const tokenId = JSON.stringify(idToken);
+  const userId = JSON.stringify(idUser);
+
+  if (userId != tokenId) {
     if (isAdmin) {
       let edit = {};
 
@@ -203,7 +207,7 @@ exports.editUser = (req, res, next) => {
       // admin bisa mengganti roles
       if (edit.username) delete edit.username;
       // if (edit.roles) delete edit.roles;
-      User.updateOne({ _id: idParams }, { $set: edit })
+      User.updateOne({ _id: idUser }, { $set: edit })
         .then((result) => {
           res.status(201).json({
             message: "Edit data success",
@@ -219,7 +223,7 @@ exports.editUser = (req, res, next) => {
       error.errorStatus = 401;
       throw error;
     }
-  } else if (idParams === idToken) {
+  } else if (userId === tokenId) {
     let edit = {};
 
     for (const obj in req.body) {
@@ -231,7 +235,7 @@ exports.editUser = (req, res, next) => {
     if (edit.username) delete edit.username;
     if (edit.roles) delete edit.roles;
 
-    User.updateOne({ _id: idParams }, { $set: edit })
+    User.updateOne({ _id: idUser }, { $set: edit })
       .then((result) => {
         res.status(201).json({
           message: "Edit data success",
