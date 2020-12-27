@@ -1,2 +1,5 @@
 .env
+.VSCodeCounter
+.gitignore
+test.js
 node_modules

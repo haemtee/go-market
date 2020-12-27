@@ -4,7 +4,7 @@ const Product = require("../models/product");
 
 exports.addProduct = (req, res, next) => {
   const errors = validationResult(req);
-  console.log("validation result =", errors);
+  //console.log("validation result =", errors);
   if (!errors.isEmpty()) {
     const err = new Error("Data Invalid");
     err.errorStatus = 400;
@@ -13,7 +13,7 @@ exports.addProduct = (req, res, next) => {
   }
   //console.log("cek =", req.userFromToken);
   if (req.userFromToken.roles != "seller") {
-    return res.status(401).json({
+    return res.status(403).json({
       message: "Error, hanya Penjual yang bisa menambah produk ",
     });
   }
@@ -52,7 +52,7 @@ exports.getAllProduct = (req, res, next) => {
   Product.find({ available: true })
     .sort({ promoted: -1, createdAt: -1 })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Get all product success",
         data: result,
       });
@@ -67,7 +67,7 @@ exports.getPromotedProduct = (req, res, next) => {
   Product.find({ promoted: true, available: true })
     .sort("-createdAt")
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Get all promoted product success",
         data: result,
       });
@@ -85,7 +85,7 @@ exports.getProductBySeller = (req, res, next) => {
     Product.find({ seller_id: req.params.id, available: true })
       .sort("-createdAt")
       .then((result) => {
-        res.status(201).json({
+        res.status(200).json({
           message: "Get all product by seller success",
           data: result,
         });
@@ -95,7 +95,7 @@ exports.getProductBySeller = (req, res, next) => {
         console.log("error: " + err);
       });
   } else {
-    res.status(403).json({
+    res.status(402).json({
       message: "Error, bukan id seller",
     });
   }
@@ -103,13 +103,13 @@ exports.getProductBySeller = (req, res, next) => {
 
 exports.getProductById = (req, res, next) => {
   if (req.isProductExist.available === false) {
-    res.status(403).json({
+    res.status(404).json({
       message: "Error, produk tidak tersedia",
     });
   } else {
     Product.findOne({ _id: req.params.id })
       .then((result) => {
-        res.status(201).json({
+        res.status(200).json({
           message: "Get product by product id success",
           data: result,
         });
@@ -124,7 +124,7 @@ exports.getProductById = (req, res, next) => {
 exports.getProductByName = (req, res, next) => {
   Product.find({ name: new RegExp(req.params.name, "i") })
     .then((result) => {
-      res.status(201).json({
+      res.status(200).json({
         message: "Get product by product name success",
         data: result,
       });
@@ -143,14 +143,13 @@ exports.deleteProductById = (req, res, next) => {
   // (compare object butuh di stringify)
   const sellerId = JSON.stringify(req.isProductExist.seller_id);
   const tokenId = JSON.stringify(idToken);
-  console.log("hllo");
   // check apakah seller id sesuai dengan cookie? , jika tidak sesuai
   if (sellerId != tokenId) {
     // jika seller id tidak sesuai, apakah roles nya admin? jika ya hapus product by admin
     if (isAdmin) {
       Product.findOneAndDelete({ _id: idProduct })
         .then((result) => {
-          res.status(201).json({
+          res.status(200).json({
             message: "Sukses menghapus product oleh admin",
             data: result,
           });
@@ -161,7 +160,7 @@ exports.deleteProductById = (req, res, next) => {
         });
       // jika seller id tidak sesuai dan bukan admin, tampilkan error
     } else {
-      res.status(401).json({
+      res.status(403).json({
         message: "Hanya bisa menghapus product sendiri",
       });
     }
@@ -171,7 +170,7 @@ exports.deleteProductById = (req, res, next) => {
     // hapus produck nya
     Product.findOneAndDelete({ _id: idProduct })
       .then((result) => {
-        res.status(201).json({
+        res.status(200).json({
           message: "Sukses menghapus produk sendiri",
           data: result,
         });
@@ -218,7 +217,7 @@ exports.editProductbyId = (req, res, next) => {
       // if (edit.promoted) delete edit.promoted;
       Product.updateOne({ _id: idProduct }, { $set: edit })
         .then((result) => {
-          res.status(201).json({
+          res.status(200).json({
             message: "Edit data by admin success",
             data: result,
           });
@@ -229,7 +228,7 @@ exports.editProductbyId = (req, res, next) => {
         });
       // jika seller id tidak sesuai dan bukan admin, tampilkan error
     } else {
-      res.status(401).json({
+      res.status(403).json({
         message: "Hanya bisa mengedit product sendiri",
       });
     }
@@ -252,7 +251,7 @@ exports.editProductbyId = (req, res, next) => {
 
     Product.updateOne({ _id: idProduct }, { $set: edit })
       .then((result) => {
-        res.status(201).json({
+        res.status(200).json({
           message: "Edit data success",
           data: result,
         });

@@ -28,14 +28,14 @@ const requireAuth = (req, res, next) => {
       }
     });
   } else {
-    res.status(401).json({ message: "Unauthorized access" });
+    res.status(403).json({ message: "Unauthorized access" });
   }
 };
 
 const isIdExist = async (req, res, next) => {
   const idUser = req.params.id;
   if (idUser.length != 24) {
-    res.status(403).json({
+    res.status(401).json({
       message: "Error ID user salah",
     });
   }
@@ -45,7 +45,7 @@ const isIdExist = async (req, res, next) => {
     // jika tidak ada maka
     if (result === null) {
       //console.log("result length = null");
-      res.status(403).json({
+      res.status(404).json({
         message: "Error User tidak ditemukan",
       });
       // jika user ditemukan maka

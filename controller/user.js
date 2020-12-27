@@ -27,7 +27,7 @@ exports.register = (req, res, next) => {
     .then((result) => {
       if (result) {
         const error = new Error("Username sudah terdaftar");
-        error.errorStatus = 400;
+        error.errorStatus = 403;
         throw error;
       }
       // jika email tidak terdaftar, maka simpan user
@@ -95,14 +95,14 @@ exports.getAllUser = (req, res, next) => {
           .sort("-createdAt")
           .then((result) => {
             if (result[0]) {
-              res.status(201).json({
+              res.status(200).json({
                 message: "Get data success",
                 data: result,
               });
             }
             if (!result[0]) {
               const error = new Error("Tidak ada ID yang ditemukan");
-              error.errorStatus = 400;
+              error.errorStatus = 404;
               throw error;
             }
           })
@@ -112,7 +112,7 @@ exports.getAllUser = (req, res, next) => {
           });
       } else {
         const error = new Error("Hanya admin yang diperbolehkan akses ini");
-        error.errorStatus = 401;
+        error.errorStatus = 403;
         throw error;
       }
     })
@@ -130,14 +130,14 @@ exports.getUser = (req, res, next) => {
     .sort("-createdAt")
     .then((result) => {
       if (result) {
-        res.status(201).json({
+        res.status(200).json({
           message: "Get data success",
           data: result,
         });
       }
       if (!result) {
         const error = new Error("Tidak ada ID yang ditemukan");
-        error.errorStatus = 400;
+        error.errorStatus = 404;
         throw error;
       }
     })
@@ -209,7 +209,7 @@ exports.editUser = (req, res, next) => {
       // if (edit.roles) delete edit.roles;
       User.updateOne({ _id: idUser }, { $set: edit })
         .then((result) => {
-          res.status(201).json({
+          res.status(200).json({
             message: "Edit data success",
             data: result,
           });
@@ -220,7 +220,7 @@ exports.editUser = (req, res, next) => {
         });
     } else {
       const error = new Error("Hanya bisa mengedit user sendiri");
-      error.errorStatus = 401;
+      error.errorStatus = 403;
       throw error;
     }
   } else if (userId === tokenId) {
@@ -237,7 +237,7 @@ exports.editUser = (req, res, next) => {
 
     User.updateOne({ _id: idUser }, { $set: edit })
       .then((result) => {
-        res.status(201).json({
+        res.status(200).json({
           message: "Edit data success",
           data: result,
         });
@@ -265,7 +265,7 @@ exports.deleteUser = (req, res, next) => {
     if (isAdmin) {
       User.findOneAndDelete({ _id: idUser })
         .then((result) => {
-          res.status(201).json({
+          res.status(200).json({
             message: "Sukses menghapus user oleh admin",
             data: result,
           });
@@ -282,7 +282,7 @@ exports.deleteUser = (req, res, next) => {
         });
     } else {
       const error = new Error("Tidak punya akses untuk menghapus user");
-      error.errorStatus = 401;
+      error.errorStatus = 403;
       throw error;
     }
   }
@@ -291,7 +291,7 @@ exports.deleteUser = (req, res, next) => {
     User.findOneAndDelete({ _id: idUser })
       .then((result) => {
         res.cookie("gomart", "", { maxAge: 1 });
-        res.status(201).json({
+        res.status(200).json({
           message: "Sukses menghapus user sendiri",
           data: result,
         });
@@ -308,5 +308,3 @@ exports.deleteUser = (req, res, next) => {
       });
   }
 };
-
-//User.update({"seller_id": false}, {"$set":{"created": true}}, {"multi": true}, (err, writeResult) => {});

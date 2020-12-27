@@ -7,7 +7,8 @@
 ```
 GET
 {base.api}/v1/user/users     => get all user sort by newest user // only admin remove password field
-{base.api}/v1/user/:id       => get user by id                   // validate user can access, remove password field
+{base.api}/v1/user/:id       => get user by id                   // validate user can access,
+                                remove password field
 {base.api}/v1/user/logout    => remove cookie return null
 
 POST
@@ -15,10 +16,12 @@ POST
 {base.api}/v1/user/login     => on success return cookie token jwt id
 
 PATCH
-{base.api}/v1/user/:id       => edit user by id  // only edit own id base on cookie, cant edit roles or username, admin roles can edit, include roles
+{base.api}/v1/user/:id       => edit user by id  // only edit own id base on cookie,
+                                cant edit roles or username, admin roles can edit, include roles
 
 DELETE
-{base.api}/v1/user/:id       => delete user by id  // only delete own id base on cookie, or admin roles // if deleted id = seller, also delete all his product
+{base.api}/v1/user/:id       => delete user by id  // only delete own id base on cookie,
+                                or admin roles // if deleted id = seller, also delete all his product
 
 ```
 
@@ -37,10 +40,25 @@ POST
 {base.api}/v1/product/add               => add product          // validate roles seller can access
 
 PATCH
-{base.api}/v1/product/:id               => edit product by id   // only edit own product, cant edit seller id, admin roles admin can edit, include promoted
+{base.api}/v1/product/:id               => edit product by id   // only edit own product, cant edit seller id,
+                                           admin roles admin can edit, include promoted
 
 DELETE
 {base.api}/v1/product/:id               => edit product by id   // only delete own product or roles == admin
+```
+
+### CART SECTION
+
+```
+GET
+{base.api}/v1/cart/:id    => get cart by id user (buyer) or admin
+
+POST
+{base.api}/v1/cart/:id    => add cart by product id (buyer), if cart exist, edit product,
+                             if product quantity = 0, remove product
+
+DELETE
+{base.api}/v1/cart/:id    => delete cart by id buyer
 ```
 
 to be continue

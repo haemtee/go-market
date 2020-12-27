@@ -8,6 +8,7 @@ require("dotenv/config");
 const app = express();
 const userRoutes = require("./routes/user");
 const productRoutes = require("./routes/product");
+const cartRoutes = require("./routes/cart");
 
 //middleware
 app.use(helmet());
@@ -18,6 +19,8 @@ app.use(cookieParser());
 app.use("/v1/user", userRoutes);
 // {base.api}/v1/product
 app.use("/v1/product", productRoutes);
+// {base.api}/v1/cart
+app.use("/v1/cart", cartRoutes);
 
 // !handling error
 app.use((err, req, res, next) => {
