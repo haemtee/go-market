@@ -10,7 +10,7 @@ const router = express.Router();
 const cartValidation = [
   body("product_id")
     .isLength({ min: 24, max: 24 })
-    .withMessage("Product id salah"),
+    .withMessage("Product id tidak valid"),
   body("quantity")
     .isFloat({ min: 0 })
     .withMessage("Kuantiti tidak boleh minus"),

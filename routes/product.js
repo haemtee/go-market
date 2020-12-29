@@ -50,7 +50,7 @@ const editValidate = [
 
 // ? PRODUCT ROUTER
 // !POST {base.api}/v1/product/add  ADD NEW PRODUCT
-router.post("/add", productValidate, requireAuth, productController.addProduct);
+router.post("/add", requireAuth, productValidate, productController.addProduct);
 
 // !GET {base.api}/v1/product/products  GET ALL PRODUCT
 router.get("/products", productController.getAllProduct);
@@ -78,8 +78,8 @@ router.delete(
 // !EDIT {base.api}/v1/product/:id   EDIT PRODUCT BY PRODUCT ID
 router.patch(
   "/:id",
-  editValidate,
   requireAuth,
+  editValidate,
   isProductExist,
   productController.editProductbyId
 );

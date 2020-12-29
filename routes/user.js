@@ -90,9 +90,9 @@ router.get("/:id", requireAuth, isIdExist, userController.getUser);
 // * COOKIE VALIDATED & ONLY EDIT OWN ID ACCESS
 router.patch(
   "/:id",
-  editUserValidate,
   requireAuth,
   isIdExist,
+  editUserValidate,
   userController.editUser
 );
 

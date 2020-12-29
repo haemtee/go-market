@@ -16,36 +16,37 @@ exports.addProduct = (req, res, next) => {
     return res.status(403).json({
       message: "Error, hanya Penjual yang bisa menambah produk ",
     });
-  }
-  const { name, description, price, stock } = req.body;
-  const seller_id = req.userFromToken._id;
-  let newProduct = {
-    seller_id: seller_id,
-    name: name,
-    description: description,
-    price: price,
-    stock: stock,
-    promoted: false,
-  };
-  // jika optional field ada maka tambahkan
-  if (req.body.image) {
-    newProduct = { ...newProduct, image: req.body.image };
-  }
-  if (req.body.stock < 1) {
-    newProduct = { ...newProduct, available: false };
-  }
-  const Posting = new Product(newProduct);
-  Posting.save()
-    .then((result) => {
-      res.status(201).json({
-        message: "Add product Success",
-        data: result,
+  } else {
+    const { name, description, price, stock } = req.body;
+    const seller_id = req.userFromToken._id;
+    let newProduct = {
+      seller_id: seller_id,
+      name: name,
+      description: description,
+      price: price,
+      stock: stock,
+      promoted: false,
+    };
+    // jika optional field ada maka tambahkan
+    if (req.body.image) {
+      newProduct = { ...newProduct, image: req.body.image };
+    }
+    if (req.body.stock < 1) {
+      newProduct = { ...newProduct, available: false };
+    }
+    const Posting = new Product(newProduct);
+    Posting.save()
+      .then((result) => {
+        res.status(201).json({
+          message: "Add product Success",
+          data: result,
+        });
+      })
+      .catch((err) => {
+        next(err);
+        console.log("error: " + err);
       });
-    })
-    .catch((err) => {
-      next(err);
-      console.log("error: " + err);
-    });
+  }
 };
 
 exports.getAllProduct = (req, res, next) => {
