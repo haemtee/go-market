@@ -50,7 +50,7 @@ const isIdExist = async (req, res, next) => {
       });
       // jika user ditemukan maka
     } else if (result != null) {
-      // console.log("is id exist :", result);
+      //console.log("is id exist :", result);
       req.isIdExist = result;
       next();
     }

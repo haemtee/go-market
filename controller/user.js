@@ -1,4 +1,6 @@
 const { validationResult } = require("express-validator");
+const path = require("path");
+const fs = require("fs");
 const jwt = require("jsonwebtoken");
 
 const User = require("../models/user");
@@ -11,7 +13,7 @@ const createToken = (id) => {
 
 exports.register = (req, res, next) => {
   const errors = validationResult(req);
-  //console.log("error dari validation result =", errors);
+  //console.log(req.files);
   if (!errors.isEmpty()) {
     const err = new Error("Data Invalid");
     err.errorStatus = 400;
@@ -42,18 +44,32 @@ exports.register = (req, res, next) => {
           city: city,
         };
         // double checking not required items
-        if (req.body.avatar) {
-          newUser = { ...newUser, avatar: req.body.avatar };
-        }
-        // double checking not required items
-        if (req.body.store_name) {
-          newUser = { ...newUser, store_name: req.body.store_name };
-        }
-        // double checking not required items
-        if (req.body.store_pic) {
-          newUser = { ...newUser, store_pic: req.body.store_pic };
+        if (req.files?.avatar) {
+          newUser = { ...newUser, avatar: "/" + req.files.avatar[0].path };
+        } else {
+          newUser = { ...newUser, avatar: "/public/images/default-avatar.png" };
         }
 
+        if (roles === "seller") {
+          // double checking not required items
+          if (req.body.store_name) {
+            newUser = { ...newUser, store_name: req.body.store_name };
+          } else {
+            newUser = { ...newUser, store_name: "Toko " + name };
+          }
+          // double checking not required items
+          if (req.files?.store_pic) {
+            newUser = {
+              ...newUser,
+              store_pic: "/" + req.files.store_pic[0].path,
+            };
+          } else {
+            newUser = {
+              ...newUser,
+              store_pic: "/public/images/default-store_pic.png",
+            };
+          }
+        }
         const Posting = new User(newUser);
         Posting.save()
           .then((result) => {
@@ -189,11 +205,13 @@ exports.editUser = (req, res, next) => {
   const idToken = req.userFromToken._id;
   const isAdmin = req.userFromToken.roles === "admin";
   const idUser = req.params.id;
+  const dataId = req.isIdExist;
   // check apakah id param dan id json sesuai
 
   const tokenId = JSON.stringify(idToken);
   const userId = JSON.stringify(idUser);
 
+  console.log(req.files);
   if (userId != tokenId) {
     if (isAdmin) {
       let edit = {};
@@ -207,6 +225,35 @@ exports.editUser = (req, res, next) => {
       // admin bisa mengganti roles
       if (edit.username) delete edit.username;
       // if (edit.roles) delete edit.roles;
+
+      if (req.files?.avatar) {
+        edit = { ...edit, avatar: "/" + req.files.avatar[0].path };
+        // hapus file avatar sebelumnya
+        if (dataId.avatar != "/public/images/default-avatar.png") {
+          removeImage(dataId.avatar);
+        }
+      }
+
+      if (req.isIdExist.roles === "seller") {
+        // double checking upload file
+        if (req.body.store_name) {
+          edit = { ...edit, store_name: req.body.store_name };
+          if (dataId.store_pic != "/public/images/default-store_pic.png") {
+            removeImage(dataId.store_pic);
+          }
+        }
+        // double checking upload file
+        if (req.files?.store_pic) {
+          edit = {
+            ...edit,
+            store_pic: "/" + req.files.store_pic[0].path,
+          };
+        }
+      } else {
+        delete edit.store_name;
+        delete edit.store_pic;
+      }
+
       User.updateOne({ _id: idUser }, { $set: edit })
         .then((result) => {
           res.status(200).json({
@@ -234,6 +281,32 @@ exports.editUser = (req, res, next) => {
     // username dan roles di hapus, untuk mencegah penggantian username / roles
     if (edit.username) delete edit.username;
     if (edit.roles) delete edit.roles;
+    if (req.files?.avatar) {
+      edit = { ...edit, avatar: "/" + req.files.avatar[0].path };
+      if (dataId.avatar != "/public/images/default-avatar.png") {
+        removeImage(dataId.avatar);
+      }
+    }
+
+    if (req.isIdExist.roles === "seller") {
+      // double checking upload file
+      if (req.body.store_name) {
+        edit = { ...edit, store_name: req.body.store_name };
+      }
+      // double checking upload file
+      if (req.files?.store_pic) {
+        edit = {
+          ...edit,
+          store_pic: "/" + req.files.store_pic[0].path,
+        };
+        if (dataId.store_pic != "/public/images/default-store_pic.png") {
+          removeImage(dataId.store_pic);
+        }
+      }
+    } else {
+      delete edit.store_name;
+      delete edit.store_pic;
+    }
 
     User.updateOne({ _id: idUser }, { $set: edit })
       .then((result) => {
@@ -254,11 +327,11 @@ exports.deleteUser = (req, res, next) => {
   const isAdmin = req.userFromToken.roles === "admin";
 
   const idUser = req.params.id;
-
-  const isSeller = result.roles === "seller";
+  const isSeller = req.isIdExist.roles === "seller";
   // check apakah id param dan id json sesuai
   const tokenId = JSON.stringify(idToken);
   const userId = JSON.stringify(idUser);
+  const dataId = req.isIdExist;
 
   if (userId != tokenId) {
     // kalau admin bisa hapus
@@ -269,8 +342,14 @@ exports.deleteUser = (req, res, next) => {
             message: "Sukses menghapus user oleh admin",
             data: result,
           });
+          if (dataId.avatar != "/public/images/default-avatar.png") {
+            removeImage(dataId.avatar);
+          }
           // clean up product yang dia jual jika dia buyer
           if (isSeller) {
+            if (dataId.store_pic != "/public/images/default-store_pic.png") {
+              removeImage(dataId.store_pic);
+            }
             Product.deleteMany({ seller_id: idUser })
               .then((result) => console.log(result))
               .catch((err) => console.log(err));
@@ -288,6 +367,21 @@ exports.deleteUser = (req, res, next) => {
   }
   // jika id cookie = id params ( hapus user sendiri )
   else if (userId == tokenId) {
+    console.log("me", dataId);
+    // hapus avatar nya
+    if (dataId.avatar != "/public/images/default-avatar.png") {
+      removeImage(dataId.avatar);
+    }
+
+    // clean up product yang dia jual jika dia buyer
+    if (isSeller) {
+      if (dataId.store_pic != "/public/images/default-store_pic.png") {
+        removeImage(dataId.store_pic);
+      }
+      Product.deleteMany({ seller_id: idUser })
+        .then((result) => console.log(result))
+        .catch((err) => console.log(err));
+    }
     User.findOneAndDelete({ _id: idUser })
       .then((result) => {
         res.cookie("gomart", "", { maxAge: 1 });
@@ -295,16 +389,18 @@ exports.deleteUser = (req, res, next) => {
           message: "Sukses menghapus user sendiri",
           data: result,
         });
-        // clean up product yang dia jual jika dia buyer
-        if (isSeller) {
-          Product.deleteMany({ seller_id: idUser })
-            .then((result) => console.log(result))
-            .catch((err) => console.log(err));
-        }
       })
       .catch((err) => {
         console.log("error :", err);
         next();
       });
   }
+};
+
+const removeImage = (filePath) => {
+  // posisi pwd di controller, tambah '../..' untuk naik 2 tingkat direktory ke root
+  filePath = path.join(__dirname, "../", filePath);
+  console.log(filePath);
+  //perintah hapus file
+  fs.unlink(filePath, (err) => console.log(err));
 };

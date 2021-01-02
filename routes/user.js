@@ -22,7 +22,7 @@ const userValidate = [
     .withMessage("Input yang diterima hanya berupa angka"),
   body("address").isLength({ min: 8 }).withMessage("Isi alamat kurang lengkap"),
   body("city").isLength({ min: 4 }).withMessage("Kota minimal 4 karakter"),
-  body("avatar").optional().isString().withMessage("Hanya menerima string"),
+
   body("store_name")
     .optional()
     .isLength({ min: 4 })
