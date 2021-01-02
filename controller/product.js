@@ -1,4 +1,6 @@
 const { validationResult } = require("express-validator");
+const path = require("path");
+const fs = require("fs");
 
 const Product = require("../models/product");
 
@@ -10,6 +12,12 @@ exports.addProduct = (req, res, next) => {
     err.errorStatus = 400;
     err.data = errors.array();
     throw err;
+  }
+  // cek file image
+  if (!req.file) {
+    return res.status(403).json({
+      message: "Error, harus menambahkan image product",
+    });
   }
   //console.log("cek =", req.userFromToken);
   if (req.userFromToken.roles != "seller") {
@@ -28,9 +36,9 @@ exports.addProduct = (req, res, next) => {
       promoted: false,
     };
     // jika optional field ada maka tambahkan
-    if (req.body.image) {
-      newProduct = { ...newProduct, image: req.body.image };
-    }
+
+    newProduct = { ...newProduct, image: "/" + req.file.path };
+
     if (req.body.stock < 1) {
       newProduct = { ...newProduct, available: false };
     }
@@ -140,6 +148,7 @@ exports.deleteProductById = (req, res, next) => {
   const isAdmin = req.userFromToken.roles === "admin";
   const idToken = req.userFromToken._id;
   const idProduct = req.params.id;
+  const dataProduct = req.isProductExist;
 
   // (compare object butuh di stringify)
   const sellerId = JSON.stringify(req.isProductExist.seller_id);
@@ -150,6 +159,7 @@ exports.deleteProductById = (req, res, next) => {
     if (isAdmin) {
       Product.findOneAndDelete({ _id: idProduct })
         .then((result) => {
+          removeImage(dataProduct.image);
           res.status(200).json({
             message: "Sukses menghapus product oleh admin",
             data: result,
@@ -171,6 +181,7 @@ exports.deleteProductById = (req, res, next) => {
     // hapus produck nya
     Product.findOneAndDelete({ _id: idProduct })
       .then((result) => {
+        removeImage(dataProduct.image);
         res.status(200).json({
           message: "Sukses menghapus produk sendiri",
           data: result,
@@ -197,6 +208,7 @@ exports.editProductbyId = (req, res, next) => {
   const idToken = req.userFromToken._id;
   const isAdmin = req.userFromToken.roles === "admin";
   const idProduct = req.params.id;
+  const dataProduct = req.isProductExist;
 
   // (compare object butuh di stringify)
   const sellerId = JSON.stringify(req.isProductExist.seller_id);
@@ -211,7 +223,12 @@ exports.editProductbyId = (req, res, next) => {
           edit[obj] = req.body[obj];
         }
       }
-      console.log(edit);
+      if (req.file) {
+        edit = { ...edit, image: "/" + req.file.path };
+        removeImage(dataProduct.image);
+      }
+
+      //console.log(edit);
       // tidak bisa ganti seller id
       if (edit.seller_id) delete edit.seller_id;
       edit.stock === 0 ? (edit.available = false) : (edit.available = true);
@@ -243,6 +260,11 @@ exports.editProductbyId = (req, res, next) => {
         edit[obj] = req.body[obj];
       }
     }
+
+    if (req.file) {
+      edit = { ...edit, image: "/" + req.file.path };
+      removeImage(dataProduct.image);
+    }
     // tidak bisa ganti seller id
     if (edit.seller_id) delete edit.seller_id;
     // bisa ganti promoted
@@ -262,4 +284,12 @@ exports.editProductbyId = (req, res, next) => {
         next();
       });
   }
+};
+
+const removeImage = (filePath) => {
+  // posisi pwd di controller, tambah '../..' untuk naik 2 tingkat direktory ke root
+  filePath = path.join(__dirname, "../", filePath);
+  console.log(filePath);
+  //perintah hapus file
+  fs.unlink(filePath, (err) => console.log(err));
 };

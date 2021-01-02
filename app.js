@@ -14,9 +14,17 @@ const cartRoutes = require("./routes/cart");
 const orderRoutes = require("./routes/order");
 
 //middleware lokasi image dan nama image
-const fileStorage = multer.diskStorage({
+const fileUserStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/images");
+    cb(null, "public/images/user");
+  },
+  filename: (req, file, cb) => {
+    cb(null, new Date().getTime() + "-" + file.originalname);
+  },
+});
+const fileProductStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/images/product");
   },
   filename: (req, file, cb) => {
     cb(null, new Date().getTime() + "-" + file.originalname);
@@ -40,12 +48,13 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use(
-  "/public/images",
+  "/public/images/",
   express.static(path.join(__dirname, "public/images"))
 );
-// middleware simpan avatar
+// middleware user avatar and store
 app.use(
-  multer({ storage: fileStorage, fileFilter: fileFilter }).fields([
+  "/v1/user",
+  multer({ storage: fileUserStorage, fileFilter: fileFilter }).fields([
     {
       name: "avatar",
       maxCount: 1,
@@ -55,7 +64,15 @@ app.use(
       maxCount: 1,
     },
   ])
-); //nama json = avatar
+);
+
+//middleware product image
+app.use(
+  "/v1/product",
+  multer({ storage: fileProductStorage, fileFilter: fileFilter }).single(
+    "image"
+  )
+);
 
 // {base.api}/v1/user
 app.use("/v1/user", userRoutes);

@@ -9,7 +9,7 @@ const productSchema = mongoose.Schema(
     // },
     seller_id: { type: mongoose.Types.ObjectId, required: true },
     name: { type: String, required: true, index: true },
-    image: { type: String },
+    image: { type: String, require: true },
     description: { type: String, required: true },
     price: {
       type: Number,

@@ -8,7 +8,6 @@ const productController = require("../controller/product");
 
 const productValidate = [
   body("name").isLength({ min: 5 }).withMessage("Product minimal 5 karakter"),
-  body("image").optional().isString().withMessage("Hanya menerima string"),
   body("description")
     .isLength({ min: 10 })
     .withMessage("Deskripsi minimal 10 karakter"),
@@ -25,7 +24,6 @@ const editValidate = [
     .isLength({ min: 5 })
     .optional()
     .withMessage("Product minimal 5 karakter"),
-  body("image").optional().isString().withMessage("Hanya menerima string"),
   body("description")
     .optional()
     .isLength({ min: 10 })

@@ -86,6 +86,9 @@ router.get("/users", requireAuth, userController.getAllUser);
 // * COOKIE VALIDATED CAN ACCESS THIS
 router.get("/:id", requireAuth, isIdExist, userController.getUser);
 
+// !GET {base.api}/v1/user/:id  GET USER from cookies
+router.get("/", requireAuth, userController.getOwnId);
+
 // !PATCH {base.api}/v1/user/:id  EDIT USER by id cant edit roles or username
 // * COOKIE VALIDATED & ONLY EDIT OWN ID ACCESS
 router.patch(

@@ -163,6 +163,18 @@ exports.getUser = (req, res, next) => {
     });
 };
 
+exports.getOwnId = (req, res, next) => {
+  // get from token
+  const result = req.userFromToken;
+  // hapus password field
+  delete result.password;
+
+  res.status(200).json({
+    message: "Sukses mengambil id sendiri",
+    data: result,
+  });
+};
+
 exports.login = (req, res, next) => {
   const errors = validationResult(req);
   //console.log(errors);
