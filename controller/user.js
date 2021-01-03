@@ -18,6 +18,7 @@ exports.register = (req, res, next) => {
     const err = new Error("Data Invalid");
     err.errorStatus = 400;
     err.data = errors.array();
+    removeUserImg(req);
     throw err;
   }
   // destruktur req body
@@ -30,6 +31,7 @@ exports.register = (req, res, next) => {
       if (result) {
         const error = new Error("Username sudah terdaftar");
         error.errorStatus = 403;
+        removeUserImg(req);
         throw error;
       }
       // jika email tidak terdaftar, maka simpan user
@@ -211,6 +213,7 @@ exports.editUser = (req, res, next) => {
     const err = new Error("Data Invalid");
     err.errorStatus = 400;
     err.data = errors.array();
+    removeUserImg(req);
     throw err;
   }
 
@@ -280,6 +283,7 @@ exports.editUser = (req, res, next) => {
     } else {
       const error = new Error("Hanya bisa mengedit user sendiri");
       error.errorStatus = 403;
+      removeUserImg(req);
       throw error;
     }
   } else if (userId === tokenId) {
@@ -415,4 +419,9 @@ const removeImage = (filePath) => {
   console.log(filePath);
   //perintah hapus file
   fs.unlink(filePath, (err) => console.log(err));
+};
+
+const removeUserImg = (req) => {
+  if (req.files.avatar) removeImage(req.files?.avatar[0]?.path);
+  if (req.files.store_pic) removeImage(req.files?.store_pic[0]?.path);
 };

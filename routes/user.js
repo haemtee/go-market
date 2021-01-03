@@ -1,6 +1,7 @@
 const express = require("express");
 const { body } = require("express-validator");
 const { requireAuth, isIdExist } = require("../controller/userMiddleware");
+const upload = require("../uploadMiddleware");
 const router = express.Router();
 
 const userController = require("../controller/user");
@@ -70,7 +71,21 @@ const editUserValidate = [
 
 // ? USER ROUTER
 // !POST {base.api}/v1/user/register REGISTER NEW USER and return Cookie
-router.post("/register", userValidate, userController.register);
+router.post(
+  "/register",
+  upload.uploadUser.fields([
+    {
+      name: "avatar",
+      maxCount: 1,
+    },
+    {
+      name: "store_pic",
+      maxCount: 1,
+    },
+  ]),
+  userValidate,
+  userController.register
+);
 
 // !POST {base.api}/v1/user/login return cookie exclude password
 router.post("/login", loginValidate, userController.login);
@@ -94,6 +109,16 @@ router.get("/", requireAuth, userController.getOwnId);
 router.patch(
   "/:id",
   requireAuth,
+  upload.uploadUser.fields([
+    {
+      name: "avatar",
+      maxCount: 1,
+    },
+    {
+      name: "store_pic",
+      maxCount: 1,
+    },
+  ]),
   isIdExist,
   editUserValidate,
   userController.editUser

@@ -9,6 +9,7 @@ GET
 {base.api}/v1/user/users     => get all user sort by newest user // only admin remove password field
 {base.api}/v1/user/:id       => get user by id                   // validate user can access,
                                 remove password field
+{base.api}/v1/user/          => get logged in user
 {base.api}/v1/user/logout    => remove cookie return null
 
 POST

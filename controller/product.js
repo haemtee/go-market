@@ -11,6 +11,7 @@ exports.addProduct = (req, res, next) => {
     const err = new Error("Data Invalid");
     err.errorStatus = 400;
     err.data = errors.array();
+    removeImage(req.file?.path);
     throw err;
   }
   // cek file image
@@ -21,6 +22,7 @@ exports.addProduct = (req, res, next) => {
   }
   //console.log("cek =", req.userFromToken);
   if (req.userFromToken.roles != "seller") {
+    removeImage(req.file?.path);
     return res.status(403).json({
       message: "Error, hanya Penjual yang bisa menambah produk ",
     });
@@ -202,6 +204,7 @@ exports.editProductbyId = (req, res, next) => {
     const err = new Error("Data Invalid");
     err.errorStatus = 400;
     err.data = errors.array();
+    removeImage(req.file?.path);
     throw err;
   }
 
@@ -246,6 +249,7 @@ exports.editProductbyId = (req, res, next) => {
         });
       // jika seller id tidak sesuai dan bukan admin, tampilkan error
     } else {
+      removeImage(req.file?.path);
       res.status(403).json({
         message: "Hanya bisa mengedit product sendiri",
       });

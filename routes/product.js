@@ -2,6 +2,7 @@ const express = require("express");
 const { body } = require("express-validator");
 const { requireAuth, isIdExist } = require("../controller/userMiddleware");
 const { isProductExist } = require("../controller/productMiddleware");
+const upload = require("../uploadMiddleware");
 const router = express.Router();
 
 const productController = require("../controller/product");
@@ -48,7 +49,13 @@ const editValidate = [
 
 // ? PRODUCT ROUTER
 // !POST {base.api}/v1/product/add  ADD NEW PRODUCT
-router.post("/add", requireAuth, productValidate, productController.addProduct);
+router.post(
+  "/add",
+  requireAuth,
+  upload.uploadProduct.single("image"),
+  productValidate,
+  productController.addProduct
+);
 
 // !GET {base.api}/v1/product/products  GET ALL PRODUCT
 router.get("/products", productController.getAllProduct);
@@ -77,6 +84,7 @@ router.delete(
 router.patch(
   "/:id",
   requireAuth,
+  upload.uploadProduct.single("image"),
   editValidate,
   isProductExist,
   productController.editProductbyId
